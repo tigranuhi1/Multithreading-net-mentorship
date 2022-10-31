@@ -1,0 +1,22 @@
+# .gitignore file
+# note that these files can be overriden in child directories, which we'll make good use of...
+# ignore binary output FOLDERS
+bin/
+Bin/
+obj/
+
+# Visual Studio 2015 cache/options directory
+.vs/
+
+# ignore binary files on top
+*.lib
+*.dll
+*.exe
+*.pdb
+
+# test results
+*.trx
+
+#user files
+*.user
+*.suo
