@@ -27,60 +27,64 @@ namespace MultiThreading.Task6.Continuation
             Task parentSuccess = Task.Factory.StartNew(() =>
             {
                 Console.WriteLine("Parent task finishing with success.");
-            })
-            .ContinueWith(child =>
+            });
+
+            parentSuccess.ContinueWith(parent =>
             {
                 Console.WriteLine("a.    Continuation task should be executed regardless of the result of the parent task.");
-            })
-            .ContinueWith(child =>
+            });
+
+            // should not print anything
+            parentSuccess.ContinueWith(parent =>
             {
                 Console.WriteLine("b.    Continuation task should be executed when the parent task finished without success.");
-            }, TaskContinuationOptions.OnlyOnFaulted)
-            .ContinueWith(child =>
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            // should not print anything
+            parentSuccess.ContinueWith(parent =>
             {
                 Console.WriteLine("c.    Continuation task should be executed when the parent task would be finished with fail and parent task thread should be reused for continuation.");
             }, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
-            
-            Task.WaitAll();
-
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine();
 
             Task parentException = Task.Factory.StartNew(() =>
             {
                 Console.WriteLine("Parent task finishing with exception.");
-                throw new Exception("Exception from parent.");
-            })
-            .ContinueWith(child =>
+                throw new Exception("Exception thrown from parentException");
+            });
+
+            parentException.ContinueWith(parent =>
             {
                 Console.WriteLine("a.    Continuation task should be executed regardless of the result of the parent task.");
-            })
-            .ContinueWith(child =>
+            });
+
+            parentException.ContinueWith(parent =>
             {
                 Console.WriteLine("b.    Continuation task should be executed when the parent task finished without success.");
-            }, TaskContinuationOptions.OnlyOnFaulted)
-            .ContinueWith(child =>
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            parentException.ContinueWith(parent =>
             {
                 Console.WriteLine("c.    Continuation task should be executed when the parent task would be finished with fail and parent task thread should be reused for continuation.");
             }, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
 
             var cts = new CancellationTokenSource();
             {
-                cts.Cancel();
                 var token = cts.Token;
                 var parentCancelcancelTask = Task.Factory.StartNew(() =>
                 {
-                    Console.WriteLine("Parent task finishing with success.");
+                    Console.WriteLine("Parent task being cancelled.");
+                    Task.Delay(2000);
                 }, token)
-                    .ContinueWith(child =>
+                    .ContinueWith(parent =>
                     {
                         Console.WriteLine("d.    Continuation task should be executed outside of the thread pool when the parent task would be cancelled.");
                     }, TaskContinuationOptions.OnlyOnCanceled | TaskContinuationOptions.LongRunning);
+
+                cts.Cancel();
             }
 
             Task.WaitAll();
-                        
+
             Console.ReadLine();
         }
     }
