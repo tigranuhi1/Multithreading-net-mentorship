@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MultiThreading.Task3.MatrixMultiplier.Matrices;
 using MultiThreading.Task3.MatrixMultiplier.Multipliers;
@@ -18,8 +19,46 @@ namespace MultiThreading.Task3.MatrixMultiplier.Tests
         [TestMethod]
         public void ParallelEfficiencyTest()
         {
-            // todo: implement a test method to check the size of the matrix which makes parallel multiplication more effective than
-            // todo: the regular one
+            // Arrange + Act
+            int rowCount = GetBestSizeForMatricesMultiplierParallel();
+
+            // Assert
+            Assert.AreNotEqual(rowCount, -1);
+        }
+
+        private int GetBestSizeForMatricesMultiplierParallel()
+        {
+            var loopCount = 10;
+            var matricesMultiplier = new MatricesMultiplier();
+            var matricesMultiplierParallel = new MatricesMultiplierParallel();
+            long matricesMultiplierResult;
+            long matricesMultiplierParallelResult;
+            Stopwatch sw = new Stopwatch();
+            for (int i = 1; i < loopCount; i++)
+            {
+                sw.Start();
+                matricesMultiplier.Multiply(new Matrix(i, i, true), new Matrix(i, i, true));
+                sw.Stop();
+                matricesMultiplierResult = sw.ElapsedMilliseconds;
+
+                sw.Restart();
+                sw.Start();
+                matricesMultiplierParallel.Multiply(new Matrix(i, i, true), new Matrix(i, i, true));
+                sw.Stop();
+                matricesMultiplierParallelResult = sw.ElapsedMilliseconds;
+
+                if (matricesMultiplierParallelResult < matricesMultiplierResult)
+                {
+                    Console.WriteLine($"MatricesMultiplierParallel performs better than MatricesMultiplier for {i}x{i} matrices.");
+                    Console.WriteLine($"Run results for {i}x{i} matrices:");
+                    Console.WriteLine($"MatricesMultiplier: {matricesMultiplierResult}ms");
+                    Console.WriteLine($"MatricesMultiplierParallel: {matricesMultiplierParallelResult}ms");
+
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         #region private methods
